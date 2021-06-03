@@ -1,0 +1,29 @@
+services:
+  languagetool:
+    container_name: "languagetool"
+    depends_on:
+      - "traefik"
+    environment:
+      Java_Xms: "${JVM_MIN}"
+      Java_Xmx: "${JVM_MAX}"
+      langtool_fasttextModel: "/models/lid.176.bin"
+      langtool_fasttextBinary: "/bin/fasttext"
+      langtool_pipelinePrewarming: "true"
+      langtool_languageModel: "/ngrams"
+    image: "erikvl87/languagetool"
+    labels:
+      # container auto-update
+      com.centurylinklabs.watchtower.enable: true
+      # traefik
+      traefik.enable: true
+      traefik.http.routers.languagetool.rule: "Host(`lt.${DOMAIN}`)"
+      traefik.http.services.languagetool.loadbalancer.server.port: 8010
+    networks:
+        - "traefik"
+    restart: "unless-stopped"
+    security_opt:
+      - "no-new-privileges:true"
+    volumes:
+      - "./languagetool/fasttext/build/fasttext:/bin/fasttext:ro"
+      - "./languagetool/models:/models:ro"
+      - "./languagetool/ngrams:/ngrams:ro"

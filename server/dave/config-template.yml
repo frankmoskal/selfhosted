@@ -1,0 +1,64 @@
+#
+# The bind address to use
+#
+address: "0.0.0.0"
+#
+# The listening port
+#
+port: "8000"
+#
+# The prefix path of the server. Default none
+#
+#prefix: "/"
+
+# ---------------------------- Transport security ------------------------------
+#tls:
+#  keyFile: key.pem
+#  certFile: cert.pem
+# ------------------------
+
+
+# ---------------------------------- Content -----------------------------------
+#
+# The provided base dir
+#
+dir: "/webdav/home"
+
+
+# --------------------------------- Basic Auth ---------------------------------
+#
+# Name of the basic auth realm
+#
+realm: "dave"
+
+# ----------------------------------- Users ------------------------------------
+#
+# A list of user definitions
+#
+users:
+  #
+  # user with username '${DV_USER}', password '${DV_PASS}' and access to '/webdav/home'
+  #   note that password must be bcrypt hashed
+  #
+  ${DV_USER}:
+    password: "${DV_PASS}"
+
+
+# ---------------------------------- Logging -----------------------------------
+#
+# Seperated loglevels for file / directory operations. All set to false per
+# default instead of error log. The error log is set to true per default.
+#
+#log:
+#  error: true
+#  create: false
+#  read: false
+#  update: false
+#  delete: false
+
+# ---------------------------------- CORS -----------------------------------
+#
+# Use the following section to enable Cross-origin access to the server.
+#
+#cors:
+#  origin: "*"

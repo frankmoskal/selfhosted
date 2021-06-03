@@ -1,0 +1,71 @@
+version: "3.8"
+
+services:
+  miniflux:
+    container_name: "miniflux"
+    depends_on:
+      - "miniflux_postgres"
+      - "traefik"
+    environment:
+      ADMIN_USERNAME: "${EMAIL}"
+      ADMIN_PASSWORD: "${MF_PWD}"
+      BASE_URL: "https://mf.${DOMAIN}"
+#      CREATE_ADMIN: 1
+      DATABASE_URL: "postgres://miniflux:${MF_DB_PWD}@miniflux_postgres/miniflux?sslmode=disable"
+      FETCH_YOUTUBE_WATCH_TIME: 1
+      POLLING_FREQUENCY: 30
+      POLLING_PARSING_ERROR_LIMIT: 0
+#      RUN_MIGRATIONS: 1
+    image: "miniflux/miniflux:latest"
+    labels:
+      # container auto-update
+      com.centurylinklabs.watchtower.enable: true
+      # traefik
+      traefik.enable: true
+      traefik.http.routers.miniflux.rule: "Host(`mf.${DOMAIN}`)"
+      traefik.http.services.miniflux.loadbalancer.server.port: 8080
+    networks:
+      - "external"
+      - "miniflux"
+    restart: "unless-stopped"
+    security_opt:
+      - "no-new-privileges:true"
+
+  miniflux_postgres:
+    container_name: "miniflux_postgres"
+    image: "postgres:${POSTGRES}"
+    environment:
+      POSTGRES_USER: "miniflux"
+      POSTGRES_PASSWORD: "${MF_DB_PWD}"
+    networks:
+      - "miniflux"
+    restart: "unless-stopped"
+    security_opt:
+      - "no-new-privileges:true"
+    volumes:
+      - "./miniflux/db:/var/lib/postgresql/data"
+
+  miniflux_postgres_backup:
+    container_name: "miniflux_postgres_backup"
+    depends_on:
+      - "miniflux_postgres"
+    image: "prodrigestivill/postgres-backup-local:${POSTGRES}"
+    environment:
+      POSTGRES_DB: "miniflux"
+      POSTGRES_EXTRA_OPTS: "-Z9"
+      POSTGRES_HOST: "miniflux_postgres"
+      POSTGRES_USER: "miniflux"
+      POSTGRES_PASSWORD: "${MF_DB_PWD}"
+    networks:
+      - "miniflux"
+    restart: "unless-stopped"
+    security_opt:
+      - "no-new-privileges:true"
+    user: "postgres:postgres"
+    volumes:
+      - "./miniflux/bak:/backups"
+
+networks:
+  miniflux:
+    name: "miniflux"
+    internal: true

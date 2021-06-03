@@ -1,0 +1,18 @@
+services:
+  dave:
+    container_name: "dave"
+    image: "micromata/dave"
+    labels:
+      # traefik
+      traefik.enable: true
+      traefik.http.routers.dave.rule: "Host(`dv.${DOMAIN}`)"
+      traefik.http.services.dave.loadbalancer.server.port: 8000
+    networks:
+      - "external"
+      - "traefik"
+    restart: "unless-stopped"
+    security_opt:
+      - "no-new-privileges:true"
+    volumes:
+      - "./dave/config.yml:/config/config.yaml:ro"
+      - "./dave/www/:/webdav/home/"

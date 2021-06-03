@@ -1,0 +1,58 @@
+http:
+  middlewares:
+    compression:
+      compress: {}
+
+    headers:
+      headers:
+        accessControlAllowMethods:
+          - "GET"
+          - "OPTIONS"
+          - "PUT"
+        accessControlAllowOriginList:
+          - "*"
+        accessControlMaxAge: 100
+        addVaryHeader: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        customFrameOptionsValue: "SAMEORIGIN"
+        customResponseHeaders:
+          Permissions-Policy: "camera=(none), microphone=(none) interest-cohort=()"
+        forceSTSHeader: true
+        frameDeny: true
+        referrerPolicy: "same-origin"
+        sslRedirect: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+
+    https:
+      redirectScheme:
+        scheme: "https"
+        permanent: true
+
+    limit:
+      rateLimit:
+        average: 100
+        burst: 50
+
+    security:
+      chain:
+        middlewares:
+          - "compression"
+          - "headers"
+          - "limit"
+
+tls:
+  options:
+    default:
+      minVersion: "VersionTLS12"
+      sniStrict: true
+      cipherSuites:
+        - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"   # TLS 1.2
+        - "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"    # TLS 1.2
+        - "TLS_AES_256_GCM_SHA384"                  # TLS 1.3
+        - "TLS_CHACHA20_POLY1305_SHA256"            # TLS 1.3
+      curvePreferences:
+        - "CurveP521"
+        - "CurveP384"

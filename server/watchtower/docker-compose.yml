@@ -1,0 +1,15 @@
+services:
+  watchtower:
+    container_name: "watchtower"
+    environment:
+      DOCKER_HOST: "tcp://docker_proxy:2375"
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_CLEANUP: "true"
+    image: "containrrr/watchtower"
+    labels:
+      # container auto-update
+      com.centurylinklabs.watchtower.enable: true
+    network_mode: "none"
+    restart: "unless-stopped"
+    security_opt:
+      - "no-new-privileges:true"

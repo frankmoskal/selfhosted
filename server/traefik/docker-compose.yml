@@ -1,0 +1,44 @@
+services:
+  traefik:
+    container_name: "traefik"
+    depends_on:
+      - "cloudflare"
+      - "docker_proxy"
+    environment:
+      CF_API_EMAIL: "${EMAIL}"
+      CF_API_KEY: "${CF_API_KEY}"
+    image: "traefik:latest"
+    labels:
+      # container auto-update
+      com.centurylinklabs.watchtower.enable: true
+      # traefik
+      traefik.enable: true
+      traefik.http.routers.traefik.middlewares: "auth@docker"
+      traefik.http.routers.traefik.rule: "Host(`tf.${DOMAIN}`)"
+      # traefik dashboard
+      traefik.http.middlewares.auth.basicauth.users: "${TF_AUTH}"
+      traefik.http.routers.traefik.service: "api@internal"
+    networks:
+      - "external"
+      - "traefik"
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: "unless-stopped"
+    security_opt:
+      - "no-new-privileges:true"
+    volumes:
+      # timezones
+      - "/etc/localtime:/etc/localtime:ro"
+      # traefik configuration
+      - "./traefik/dynamic:/dynamic:ro"
+      - "./traefik/config.yml:/traefik.yml:ro"
+      - "./traefik/acme.json:/acme.json"
+
+networks:
+  external:
+    name: "external"
+    driver: "bridge"
+  traefik:
+    name: "traefik"
+    internal: true

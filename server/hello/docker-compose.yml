@@ -1,0 +1,18 @@
+services:
+  hello:
+    container_name: "hello"
+    depends_on:
+      - "traefik"
+    image: "crccheck/hello-world"
+    labels:
+      # container auto-update
+      com.centurylinklabs.watchtower.enable: true
+      # traefik
+      traefik.enable: true
+      traefik.http.routers.hello.rule: "Host(`${DOMAIN}`, `www.${DOMAIN}`)"
+      traefik.http.services.hello.loadbalancer.server.port: "8000"
+    networks:
+      - "traefik"
+    restart: "unless-stopped"
+    security_opt:
+      - "no-new-privileges:true"

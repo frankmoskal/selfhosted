@@ -1,0 +1,86 @@
+services:
+  paperless:
+    container_name: "paperless"
+    depends_on:
+      - "paperless_postgres"
+      - "paperless_redis"
+      - "traefik"
+    environment:
+      PAPERLESS_ADMIN_USER: "${EMAIL}"
+      PAPERLESS_ADMIN_MAIL: "${EMAIL}"
+      PAPERLESS_ADMIN_PASSWORD: "${PL_ADMIN_PWD}"
+      PAPERLESS_DBHOST: "paperless_postgres"
+      PAPERLESS_DBPASS: "${PL_DB_PWD}"
+      PAPERLESS_DBUSER: "${PL_DB_USER}"
+      PAPERLESS_DBSSLMODE: "disable"
+      PAPERLESS_REDIS: "redis://paperless_redis:6379"      
+      PAPERLESS_SECRET_KEY: "${PL_SECRET}"
+    image: "jonaswinkler/paperless-ng:latest"
+    labels:
+      # container auto-update
+      com.centurylinklabs.watchtower.enable: true
+      # traefik
+      traefik.enable: true
+      traefik.http.routers.paperless.rule: "Host(`pl.${DOMAIN}`)"
+      traefik.http.services.paperless.loadbalancer.server.port: 8000
+    networks:
+      - "external"
+      - "paperless"
+    restart: "unless-stopped"
+    security_opt:
+      - "no-new-privileges:true"
+    volumes:
+      - "./paperless/data:/usr/src/paperless/data"
+      - "./paperless/media:/usr/src/paperless/media"
+      - "./paperless/export:/usr/src/paperless/export"
+      - "./paperless/consume:/usr/src/paperless/consume"
+
+  paperless_postgres:
+    container_name: "paperless_postgres"
+    image: "postgres:${POSTGRES}"
+    environment:
+      POSTGRES_DB: "paperless"
+      POSTGRES_USER: "${PL_DB_USER}"
+      POSTGRES_PASSWORD: "${PL_DB_PWD}"
+    networks:
+      - "paperless"
+    restart: "unless-stopped"
+    security_opt:
+      - "no-new-privileges:true"
+    volumes:
+      - "./paperless/db:/var/lib/postgresql/data"
+
+  paperless_postgres_backup:
+    container_name: "paperless_postgres_backup"
+    depends_on:
+      - "paperless_postgres"
+    image: "prodrigestivill/postgres-backup-local:${POSTGRES}"
+    environment:
+      POSTGRES_DB: "paperless"
+      POSTGRES_EXTRA_OPTS: "-Z9"
+      POSTGRES_HOST: "paperless_postgres"
+      POSTGRES_USER: "paperless"
+      POSTGRES_PASSWORD: "${PL_DB_PWD}"
+    networks:
+      - "paperless"
+    restart: "unless-stopped"
+    security_opt:
+      - "no-new-privileges:true"
+    user: "postgres:postgres"
+    volumes:
+      - "./paperless/bak:/backups"
+
+  paperless_redis:
+    container_name: "paperless_redis"
+    image: "redis:6.0"
+    networks:
+      - "paperless"
+    restart: "unless-stopped"
+    security_opt:
+      - "no-new-privileges:true"
+
+
+networks:
+  paperless:
+    name: "paperless"
+    internal: true

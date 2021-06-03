@@ -1,0 +1,16 @@
+services:
+  cloudflare:
+    container_name: "cloudflare"
+    environment:
+      PUID: 1000
+      PGID: 1000
+    image: "timothyjmiller/cloudflare-ddns:latest"
+    labels:
+      # container auto-update
+      com.centurylinklabs.watchtower.enable: true
+    network_mode: "host"
+    restart: "unless-stopped"
+    security_opt:
+      - "no-new-privileges:true"
+    volumes:
+      - "./cloudflare/config.json:/config.json:ro"

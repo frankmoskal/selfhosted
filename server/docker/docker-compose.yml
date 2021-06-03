@@ -1,0 +1,15 @@
+services:
+  docker_proxy:
+    container_name: "docker_proxy"
+    environment:
+      CONTAINERS: 1
+    image: "tecnativa/docker-socket-proxy"
+    networks:
+      - "traefik"
+    ports:
+      - 2375
+    privileged: true
+    restart: "unless-stopped"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/dev/log:/dev/log:ro"
